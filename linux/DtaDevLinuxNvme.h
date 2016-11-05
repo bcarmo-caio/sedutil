@@ -18,7 +18,24 @@ along with sedutil.  If not, see <http://www.gnu.org/licenses/>.
 
  * C:E********************************************************************** */
 #pragma once
-#include "linux/nvme.h"
+
+/** Fix for dealing with kernel >= 4.4.0 */
+#include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
+    #include <linux/nvme_ioctl.h>
+    /**
+     * The following include will not be visible for IDEs for they do not know
+     *     they should include /usr/src/linux-header-`uname -r`/ symlink
+     *     directory.
+     * This will be resolved when compiling using provided Makefile with proper
+     *     fix for this.
+     */
+    #include <build/include/linux/nvme.h>
+#else
+    #include <linux/nvme.h>
+#endif
+/* End fix kernel 4.4.0 */
+
 #include "DtaStructures.h"
 #include "DtaDevLinuxDrive.h"
 

@@ -49,6 +49,22 @@ MKDIR=mkdir
 CP=cp
 CCADMIN=CCadmin
 
+# Fix for NVMe include when working with kernel >= 4.4.0
+KERNEL_VERSION   := `uname -r | egrep -o "([0-9]{1,}\.){2}[0-9]{1,}" `
+FIX_NVME_INCLUDE := $(shell [ "${KERNEL_VERSION}" \< "4.4.0" ] && echo false)
+ifneq ($(FIX_NVME_INCLUDE), false)
+	KERNEL_BUILD_DIR := /lib/modules/`uname -r`/
+	CPPFLAGS += -I$(KERNEL_BUILD_DIR)
+	# Now we must use the following line in DtaDevLinuxNvme.h to include NVMe:
+	#
+	# include <build/include/linux/nvme.h>
+	#
+	# We must secure not to insert subdirectories [build/include/] or
+	#     [build/include/linux/] in -I option for that action will mess up other
+	#     "include"s
+	#
+	# It is necessary to include <linux/nvme_ioctl.h> as well.
+endif # End fix for NVMe (kernel version >= 4.4.0)
 
 # build
 build: .build-post
